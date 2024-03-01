@@ -43,7 +43,7 @@ if __name__ == '__main__':
          #                      orientation = "horizontal"
           #                  )
 
-    st.title("PyInPSE Graph Analyzer")
+    st.title("PyInPSE Graph Analysis")
 
     if selected_tab == "Import Graph":
         upload_graph()
