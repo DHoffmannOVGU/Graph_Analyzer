@@ -14,7 +14,7 @@ if __name__ == '__main__':
     if "edge_list" not in st.session_state:
         st.session_state["edge_list"] = []
     if "graph_dict" not in st.session_state:
-        st.session_state["graph_dict"] = []
+        st.session_state["graph_dict"] = {}
     tab_list = [
         "Import Graph",
         "Create Nodes",
@@ -35,15 +35,7 @@ if __name__ == '__main__':
                                    orientation="vertical"
                                    )
 
-    #selected_tab = option_menu("Main Menu",
-     #                  tab_list,
-      #                 icons=['house', 'gear', "arrow-clockwise"],
-       #                menu_icon="cast",
-        #               default_index=1,
-         #                      orientation = "horizontal"
-          #                  )
-
-    st.title("PyInPSE Graph Analysis")
+    st.title("PyInPSE Graph Analyzer")
 
     if selected_tab == "Import Graph":
         upload_graph()

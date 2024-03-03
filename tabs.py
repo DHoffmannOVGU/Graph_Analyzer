@@ -10,7 +10,17 @@ from graph_functions import (find_density,
                              show_shortest_paths,
                              shortest_path)
 from model import metamodel_dict
+from ppr_transformer import ppr_dict_to_graph_dict, graph_dict_to_ppr_dict
 
+
+def update_session_state(nodes, edges):
+    st.session_state["node_list"] = nodes
+    st.session_state["edge_list"] = edges
+    graph_dict = {
+        "nodes": st.session_state["node_list"],
+        "edges": st.session_state["edge_list"],
+    }
+    st.session_state["graph_dict"] = graph_dict
 
 def upload_graph():
     uploaded_graph = st.file_uploader("Upload an existing graph", type="json")
@@ -18,9 +28,15 @@ def upload_graph():
         uploaded_graph_dict = json.load(uploaded_graph)
         uploaded_nodes = uploaded_graph_dict["nodes"]
         uploaded_edges = uploaded_graph_dict["edges"]
+        if "sourceHandle" in uploaded_graph_dict["edges"][0]:
+            uploaded_graph_dict = ppr_dict_to_graph_dict(uploaded_graph_dict)
+            uploaded_nodes = uploaded_graph_dict["nodes"]
+            uploaded_edges = uploaded_graph_dict["edges"]
         st.json(uploaded_graph_dict, expanded=False)
     else:
         st.info("Please upload a graph if available")
+        uploaded_nodes = []
+        uploaded_edges = []
 
     update_graph_button = st.button(
         "Update Graph via the Upload",
@@ -28,14 +44,7 @@ def upload_graph():
         type="primary"
     )
     if update_graph_button and uploaded_graph is not None:
-        st.session_state["node_list"] = uploaded_nodes
-        st.session_state["edge_list"] = uploaded_edges
-        graph_dict = {
-            "nodes": st.session_state["node_list"],
-            "edges": st.session_state["edge_list"],
-        }
-        st.session_state["graph_dict"] = graph_dict
-
+        update_session_state(uploaded_nodes, uploaded_edges)
 
 def create_nodes():
     def print_hi(name, age):
@@ -50,7 +59,7 @@ def create_nodes():
             "type": type_n
         }
         st.session_state["node_list"].append(node_dict)
-        st.session_state["graph_dict"]["edges"] = st.session_state["node_list"]
+        st.session_state["graph_dict"]["nodes"] = st.session_state["node_list"]
 
     name_node = st.text_input("Type in the name of the node")
     type_node = st.selectbox("Specify the type of the node", ["Node", "Person"])
@@ -116,11 +125,7 @@ def store_graph():
         st.json(st.session_state["node_list"], expanded=True)
         st.json(st.session_state["edge_list"], expanded=False)
 
-    graph_dict = {
-        "nodes": st.session_state["node_list"],
-        "edges": st.session_state["edge_list"],
-    }
-    st.session_state["graph_dict"] = graph_dict
+        update_session_state(st.session_state["node_list"], st.session_state["edge_list"])
 
     with st.expander("Show Graph JSON", expanded=False):
         st.json(st.session_state["graph_dict"])
@@ -238,6 +243,8 @@ def analyze_graph():
 
 def export_graph():
     graph_string = json.dumps(st.session_state["graph_dict"])
+    ppr_dict = graph_dict_to_ppr_dict(st.session_state["graph_dict"])
+    ppr_json = json.dumps(ppr_dict)
 
     st.download_button(
         "Export Graph to JSON",
@@ -246,4 +253,13 @@ def export_graph():
         data=graph_string,
         use_container_width=True,
         type="primary"
+    )
+
+    st.download_button(
+        "Export Graph to JSON",
+        file_name="graph.json",
+        mime="application/json",
+        data=ppr_json,
+        use_container_width=True,
+        type="secondary"
     )
